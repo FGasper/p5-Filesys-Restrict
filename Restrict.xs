@@ -13,6 +13,9 @@
 #include <stdbool.h>
 
 #if HAS_UNIX_SOCKETS
+#ifdef WIN32
+#include <afunix.h>
+#else
 #include <sys/un.h>
 #endif
 
