@@ -9,6 +9,7 @@
 // take that approach, but for now let’s just forgo UNIX socket support
 // unless there’s sys/un.h.
 #ifdef I_SYS_UN     // cf. perl5 Porting/Glossary
+#include <sys/un.h>
 #define HAS_UNIX_SOCKETS 1
 #else
 #define HAS_UNIX_SOCKETS 0
@@ -16,13 +17,6 @@
 
 #include <sys/types.h>
 #include <stdbool.h>
-
-#if HAS_UNIX_SOCKETS
-#ifndef WIN32
-#include <afunix.h>
-#else
-#include <sys/un.h>
-#endif
 
 #include "ppport.h"
 
