@@ -2,7 +2,7 @@ use ExtUtils::MakeMaker;
 
 use Socket;
 
-my $has_unix_sockets = eval { socket(my $sock, Socket::PF_UNIX(), Socket::SOCK_STREAM(), 0); 1 };
+my $has_unix_sockets = eval { socket(my $sock, Socket::PF_UNIX(), Socket::SOCK_STREAM(), 0) };
 
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
