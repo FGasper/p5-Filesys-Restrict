@@ -3,7 +3,12 @@
 #include "perl.h"
 #include "XSUB.h"
 
-#ifdef FR_HAS_UNIX_SOCKETS
+// Modern Win32 releases do support UNIX sockets via afunix.h,
+// but that header file isn’t available on MinGW. Socket.xs defines
+// the necessary structs and constants directly; if needed we could
+// take that approach, but for now let’s just forgo UNIX socket support
+// unless there’s sys/un.h.
+#ifdef I_SYS_UN     // cf. perl5 Porting/Glossary
 #define HAS_UNIX_SOCKETS 1
 #else
 #define HAS_UNIX_SOCKETS 0
@@ -13,7 +18,7 @@
 #include <stdbool.h>
 
 #if HAS_UNIX_SOCKETS
-#ifdef WIN32
+#ifndef WIN32
 #include <afunix.h>
 #else
 #include <sys/un.h>
