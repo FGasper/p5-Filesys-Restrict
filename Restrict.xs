@@ -4,9 +4,9 @@
 #include "XSUB.h"
 
 #ifdef FR_HAS_UNIX_SOCKETS
-#define HAS_UNIX_SOCKETS 0
-#else
 #define HAS_UNIX_SOCKETS 1
+#else
+#define HAS_UNIX_SOCKETS 0
 #endif
 
 #include <sys/types.h>
@@ -297,12 +297,12 @@ static OP* _wrapped_pp_##OPID(pTHX) {   \
     return ORIG_PL_ppaddr[OPID](aTHX);  \
 }
 
-#if HAS_UNIX_SOCKETS
 const char* _get_local_socket_path(pTHX_ SV* sockname_sv) {
+    char* path = NULL;
+
+#if HAS_UNIX_SOCKETS
     STRLEN sockname_len;
     const char* sockname_str = SvPVbyte(sockname_sv, sockname_len);
-
-    char* path = NULL;
 
     // Let Perl handle the failure state:
     if (sockname_len >= sizeof(struct sockaddr)) {
@@ -312,13 +312,13 @@ const char* _get_local_socket_path(pTHX_ SV* sockname_sv) {
             path = ( (struct sockaddr_un*) sockname_str )->sun_path;
         }
     }
+#endif
 
     return path;
 }
 
 MAKE_SOCKET_OP_WRAPPER(OP_BIND);
 MAKE_SOCKET_OP_WRAPPER(OP_CONNECT);
-#endif
 
 MAKE_SINGLE_ARG_LIST_WRAPPER(OP_SYSOPEN, 1, 4);
 MAKE_FIRST_ARG_FIXED_LIST_WRAPPER(OP_TRUNCATE, 2);

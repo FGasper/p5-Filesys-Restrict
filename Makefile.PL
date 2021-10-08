@@ -2,7 +2,7 @@ use ExtUtils::MakeMaker;
 
 use Socket;
 
-my $has_unix_sockets = eval { socket(my $sock, PF_UNIX, SOCK_STREAM, 0) };
+my $has_unix_sockets = eval { socket(my $sock, Socket::PF_UNIX(), Socket::SOCK_STREAM(), 0); 1 };
 
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
@@ -24,7 +24,7 @@ WriteMakefile(
     CCFLAGS        => join(
         q< >,
         $Config{'ccflags'},
-        ( $has_unix_sockets ? '-DFR_HAS_UNIX_SOCKETS', : () ),
+        ( $has_unix_sockets ? '-DFR_HAS_UNIX_SOCKETS' : () ),
     ),
 
     # Needs X::Tiny
