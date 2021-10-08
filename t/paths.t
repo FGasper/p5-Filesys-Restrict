@@ -54,10 +54,19 @@ sub _test_system {
         "simple system on approved path",
     );
 
-    lives_ok(
-        sub { system { $script_path } $script_path },
-        "system { .. } on approved path",
-    );
+    # This spuriously warns in Windows, so we silence the warning here.
+    # The warning is:
+    #   Can't spawn "cmd.exe": No such file or directory
+    #
+    {
+
+        local $SIG{'__WARN__'} = sub {};
+
+        lives_ok(
+            sub { system { $script_path } $script_path },
+            "system { .. } on approved path",
+        );
+    }
 
     throws_ok(
         sub { system "$tempdir/bad" },
@@ -144,7 +153,7 @@ sub _test_2paths {
     my @funcs = qw( rename link );
     push @funcs, 'symlink' if $Config{'d_symlink'};
 
-    for my $fn ( qw( rename symlink link ) ) {
+    for my $fn ( @funcs ) {
         lives_ok(
             sub { die if !eval "$fn '$good_path', '$good_path'; 1" },
             "$fn on approved paths",

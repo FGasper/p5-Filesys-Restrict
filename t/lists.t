@@ -55,23 +55,23 @@ mkdir $good_dir;
     }
 
     lives_ok(
-        sub { chmod 0777, "$good_dir/foo" or warn $! },
+        sub { chmod 0444, "$good_dir/foo" or warn $! },
         'chmod w/ one approved path',
     );
 
     is(
         (stat "$good_dir/foo")[2] & 0777,
-        0777,
+        0444,
         'chmod() was effective',
     );
 
     lives_ok(
-        sub { chmod 0777, "$good_dir/foo", "$good_dir/bar" },
+        sub { chmod 0444, "$good_dir/foo", "$good_dir/bar" },
         'chmod w/ two approved args',
     );
 
     throws_ok(
-        sub { chmod 0777, "$good_dir/foo", "$good_dir/bar", "$tempdir/baz" },
+        sub { chmod 0444, "$good_dir/foo", "$good_dir/bar", "$tempdir/baz" },
         'Filesys::Restrict::X::Forbidden',
         'chmod w/ two approved args and one forbidden',
     );
