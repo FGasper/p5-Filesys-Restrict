@@ -12,6 +12,10 @@ use Socket ();
 
 use Filesys::Restrict;
 
+if (!Filesys::Restrict::_HAS_UNIX_SOCKETS) {
+    plan skip_all => "Your Filesys::Restrict build doesn’t support UNIX sockets.";
+}
+
 my $tempdir = File::Temp::tempdir();
 
 my $good_dir = "$tempdir/good";

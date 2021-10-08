@@ -3,9 +3,18 @@
 #include "perl.h"
 #include "XSUB.h"
 
+#ifdef WIN32
+#define HAS_UNIX_SOCKETS 0
+#else
+#define HAS_UNIX_SOCKETS 1
+#endif
+
 #include <sys/types.h>
-#include <sys/un.h>
 #include <stdbool.h>
+
+#if HAS_UNIX_SOCKETS
+#include <sys/un.h>
+#endif
 
 #include "ppport.h"
 
@@ -272,6 +281,23 @@ static OP* _wrapped_pp_##OPID(pTHX) {                   \
     return ORIG_PL_ppaddr[OPID](aTHX);                  \
 }
 
+/* For ops where only the last arg is a string. */
+#define MAKE_SOCKET_OP_WRAPPER(OPID)           \
+static OP* _wrapped_pp_##OPID(pTHX) {   \
+    SV* callback = _get_callback(aTHX); \
+    if (callback) {                             \
+        dSP;                            \
+        const char* path = _get_local_socket_path(aTHX_ SP[0]); \
+        if (path) { \
+            SV* path_sv = newSVpvn_flags(path, strlen(path), SVs_TEMP); \
+            _authorize(aTHX_ OPID, path_sv, callback); \
+        } \
+    }                                   \
+                                        \
+    return ORIG_PL_ppaddr[OPID](aTHX);  \
+}
+
+#if HAS_UNIX_SOCKETS
 const char* _get_local_socket_path(pTHX_ SV* sockname_sv) {
     STRLEN sockname_len;
     const char* sockname_str = SvPVbyte(sockname_sv, sockname_len);
@@ -290,25 +316,9 @@ const char* _get_local_socket_path(pTHX_ SV* sockname_sv) {
     return path;
 }
 
-/* For ops where only the last arg is a string. */
-#define MAKE_SOCKET_OP_WRAPPER(OPID)           \
-static OP* _wrapped_pp_##OPID(pTHX) {   \
-    SV* callback = _get_callback(aTHX); \
-    if (callback) {                             \
-        dSP;                            \
-        const char* path = _get_local_socket_path(aTHX_ SP[0]); \
-        if (path) { \
-            SV* path_sv = newSVpvn_flags(path, strlen(path), SVs_TEMP); \
-            _authorize(aTHX_ OPID, path_sv, callback); \
-        } \
-    }                                   \
-                                        \
-    return ORIG_PL_ppaddr[OPID](aTHX);  \
-}
-
-
 MAKE_SOCKET_OP_WRAPPER(OP_BIND);
 MAKE_SOCKET_OP_WRAPPER(OP_CONNECT);
+#endif
 
 MAKE_SINGLE_ARG_LIST_WRAPPER(OP_SYSOPEN, 1, 4);
 MAKE_FIRST_ARG_FIXED_LIST_WRAPPER(OP_TRUNCATE, 2);
@@ -392,8 +402,13 @@ BOOT:
         MAKE_BOOT_WRAPPER(OP_EXEC);
         MAKE_BOOT_WRAPPER(OP_SYSTEM);
 
-        MAKE_BOOT_WRAPPER(OP_BIND);
-        MAKE_BOOT_WRAPPER(OP_CONNECT);
+        if (HAS_UNIX_SOCKETS) {
+            MAKE_BOOT_WRAPPER(OP_BIND);
+            MAKE_BOOT_WRAPPER(OP_CONNECT);
+        }
+
+        HV *stash = gv_stashpv(MYPKG, FALSE);
+        newCONSTSUB(stash, "_HAS_UNIX_SOCKETS", boolSV(HAS_UNIX_SOCKETS));
 
         MAKE_BOOT_WRAPPER(OP_LSTAT);
         MAKE_BOOT_WRAPPER(OP_STAT);

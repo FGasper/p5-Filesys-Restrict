@@ -16,6 +16,9 @@ WriteMakefile(
     INC               => '-Wall -I.', # e.g., '-I. -I/usr/include/other'
     LICENSE           => "perl_5",
 
+    # Needs X::Tiny
+    MIN_PERL_VERSION => '5.10.0',
+
     META_MERGE => {
         'meta-spec' => { version => 2 },
         resources => {
