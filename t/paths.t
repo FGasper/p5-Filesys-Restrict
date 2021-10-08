@@ -7,6 +7,8 @@ use Test::More;
 use Test::FailWarnings;
 use Test::Exception;
 
+use Config;
+
 use File::Temp ();
 
 use Filesys::Restrict;
@@ -33,14 +35,16 @@ mkdir $good_dir;
 }
 
 sub _test_system {
+    return if !$Config{'sharpbang'};
+
     my $script_path = "$good_dir/script.pl";
 
     {
         open my $fh, '>', $script_path or die "open($script_path): $!";
-        chmod 0755, $fh;
+        chmod 0755, $script_path;
         syswrite $fh, join(
             $/,
-            "#!$^X",
+            "$Config{'sharpbang'}$^X",
             "exit 0;",
         );
     }
@@ -136,6 +140,9 @@ sub _test_last_arg_nofh {
 sub _test_2paths {
     my $good_path = "$good_dir/one";
     my $bad_path = "$tempdir/one";
+
+    my @funcs = qw( rename link );
+    push @funcs, 'symlink' if $Config{'d_symlink'};
 
     for my $fn ( qw( rename symlink link ) ) {
         lives_ok(

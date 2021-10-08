@@ -7,6 +7,8 @@ use Test::More;
 use Test::FailWarnings;
 use Test::Exception;
 
+use Config;
+
 use File::Temp ();
 
 use Filesys::Restrict;
@@ -53,7 +55,7 @@ mkdir $good_dir;
     }
 
     lives_ok(
-        sub { chmod 0777, "$good_dir/foo" },
+        sub { chmod 0777, "$good_dir/foo" or warn $! },
         'chmod w/ one approved path',
     );
 
@@ -74,10 +76,12 @@ mkdir $good_dir;
         'chmod w/ two approved args and one forbidden',
     );
 
-    lives_ok(
-        sub { chmod 0777, \*STDIN },
-        'chmod w/ filehandle',
-    );
+    if ($Config{'d_fchmod'}) {
+        lives_ok(
+            sub { chmod 0777, \*STDIN },
+            'chmod w/ filehandle',
+        );
+    }
 
     #----------------------------------------------------------------------
 
@@ -97,10 +101,12 @@ mkdir $good_dir;
         'chown w/ two approved args and one forbidden',
     );
 
-    lives_ok(
-        sub { chown 0, 0, \*STDIN },
-        'chown w/ filehandle',
-    );
+    if ($Config{'d_fchown'}) {
+        lives_ok(
+            sub { chown 0, 0, \*STDIN },
+            'chown w/ filehandle',
+        );
+    }
 
     #----------------------------------------------------------------------
 
@@ -122,10 +128,12 @@ mkdir $good_dir;
         'utime w/ two approved args and one forbidden',
     );
 
-    lives_ok(
-        sub { utime $now, $now, \*STDIN },
-        'utime w/ filehandle',
-    );
+    if ($Config{'d_futimes'}) {
+        lives_ok(
+            sub { utime $now, $now, \*STDIN },
+            'utime w/ filehandle',
+        );
+    }
 }
 
 done_testing;
