@@ -3,14 +3,28 @@
 #include "perl.h"
 #include "XSUB.h"
 
+// Cribbed from Socket.xs:
+/* STRUCT_OFFSET should have come from from perl.h, but if not,
+ * roll our own (not using offsetof() since that is C99). */
+#ifndef STRUCT_OFFSET
+#  define STRUCT_OFFSET(s,m)  (Size_t)(&(((s *)0)->m))
+#endif
+
+#define STRUCT_MEMBER_SIZE(s,m) sizeof(((s *)0)->m)
+
 // Modern Win32 releases do support UNIX sockets via afunix.h,
 // but that header file isn’t available on MinGW. Socket.xs defines
 // the necessary structs and constants directly; if needed we could
 // take that approach, but for now let’s just forgo UNIX socket support
 // unless there’s sys/un.h.
 #ifdef I_SYS_UN     // cf. perl5 Porting/Glossary
-#include <sys/un.h>
 #define HAS_UNIX_SOCKETS 1
+#include <sys/un.h>
+#define SUN_PATH_LENGTH STRUCT_MEMBER_SIZE(struct sockaddr_un, sun_path)
+#define SA_FAMILY_END_OFFSET ( \
+    STRUCT_OFFSET(struct sockaddr, sa_family) \
+    + STRUCT_MEMBER_SIZE(struct sockaddr, sa_family) \
+)
 #else
 #define HAS_UNIX_SOCKETS 0
 #endif
@@ -283,15 +297,31 @@ static OP* _wrapped_pp_##OPID(pTHX) {                   \
     return ORIG_PL_ppaddr[OPID](aTHX);                  \
 }
 
+static inline U8 _get_socket_path_strlen(const char* path) {
+fprintf(stderr, "path length: %d\n", SUN_PATH_LENGTH);
+    U8 len = SUN_PATH_LENGTH;
+
+    while (len > 0) {
+        if (path[--len] != '\0') {
+            --len;
+            break;
+        }
+    }
+
+    return len;
+}
+
 /* For ops where only the last arg is a string. */
 #define MAKE_SOCKET_OP_WRAPPER(OPID)           \
 static OP* _wrapped_pp_##OPID(pTHX) {   \
     SV* callback = _get_callback(aTHX); \
     if (callback) {                             \
         dSP;                            \
-        const char* path = _get_local_socket_path(aTHX_ SP[0]); \
-        if (path) { \
-            SV* path_sv = newSVpvn_flags(path, strlen(path), SVs_TEMP); \
+        char path[1024] = { NULL }; \
+fprintf(stderr, "path_p: %p\n", path); \
+        if (_get_local_socket_path(aTHX_ SP[0], &path)) { \
+            SV* path_sv = newSVpvn_flags(path, _get_socket_path_strlen(path), SVs_TEMP); \
+fprintf(stderr, "len: %d\n", _get_socket_path_strlen(path)); \
             _authorize(aTHX_ OPID, path_sv, callback); \
         } \
     }                                   \
@@ -299,24 +329,31 @@ static OP* _wrapped_pp_##OPID(pTHX) {   \
     return ORIG_PL_ppaddr[OPID](aTHX);  \
 }
 
-const char* _get_local_socket_path(pTHX_ SV* sockname_sv) {
-    char* path = NULL;
+bool _get_local_socket_path(pTHX_ SV* sockname_sv, char* path) {
 
 #if HAS_UNIX_SOCKETS
     STRLEN sockname_len;
     const char* sockname_str = SvPVbyte(sockname_sv, sockname_len);
 
     // Let Perl handle the failure state:
-    if (sockname_len >= sizeof(struct sockaddr)) {
+fprintf(stderr, "sockname_len: %d\n", sockname_len);
+    if (sockname_len >= SA_FAMILY_END_OFFSET) {
         sa_family_t family = ( (struct sockaddr*) sockname_str )->sa_family;
+fprintf(stderr, "family: %d\n", family);
 
         if (family == AF_UNIX) {
-            path = ( (struct sockaddr_un*) sockname_str )->sun_path;
+            memcpy(
+                path,
+                ( (struct sockaddr_un*) sockname_str )->sun_path,
+                sockname_len - STRUCT_OFFSET(struct sockaddr_un, sun_path)
+            );
+
+            return true;
         }
     }
 #endif
 
-    return path;
+    return false;
 }
 
 MAKE_SOCKET_OP_WRAPPER(OP_BIND);

@@ -59,4 +59,21 @@ mkdir $good_dir;
     );
 }
 
+{
+    my $path;
+    my $check = Filesys::Restrict::create( sub {
+use Data::Dumper;
+print STDERR Dumper [@_];
+        $path = $_[1];
+
+        return 1;
+    } );
+
+    socket my $s, Socket::AF_UNIX, Socket::SOCK_STREAM, 0;
+
+    bind $s, Socket::pack_sockaddr_un("\0hahahaha");
+
+    is( $path, "\0hahahaha", 'expected path given to callback' );
+}
+
 done_testing();
