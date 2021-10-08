@@ -1,4 +1,9 @@
 use ExtUtils::MakeMaker;
+
+use Socket;
+
+my $has_unix_sockets = eval { socket(my $sock, PF_UNIX, SOCK_STREAM, 0) };
+
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 WriteMakefile(
@@ -15,6 +20,12 @@ WriteMakefile(
     DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
     INC               => '-Wall -I.', # e.g., '-I. -I/usr/include/other'
     LICENSE           => "perl_5",
+
+    CCFLAGS        => join(
+        q< >,
+        $Config{'ccflags'},
+        ( $has_unix_sockets ? '-DFR_HAS_UNIX_SOCKETS', : () ),
+    ),
 
     # Needs X::Tiny
     MIN_PERL_VERSION => '5.10.0',

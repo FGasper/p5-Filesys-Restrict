@@ -3,7 +3,7 @@
 #include "perl.h"
 #include "XSUB.h"
 
-#ifdef WIN32
+#ifdef FR_HAS_UNIX_SOCKETS
 #define HAS_UNIX_SOCKETS 0
 #else
 #define HAS_UNIX_SOCKETS 1
