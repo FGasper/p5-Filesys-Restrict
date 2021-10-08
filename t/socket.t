@@ -62,8 +62,6 @@ mkdir $good_dir;
 {
     my $path;
     my $check = Filesys::Restrict::create( sub {
-use Data::Dumper;
-print STDERR Dumper [@_];
         $path = $_[1];
 
         return 1;
