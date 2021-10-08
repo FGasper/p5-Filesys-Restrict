@@ -146,12 +146,40 @@ sub _test_last_arg_nofh {
     );
 }
 
+sub _test_symlink {
+    return if !$Config{'d_symlink'};
+
+    my $good_path = "$good_dir/one";
+    my $bad_path = "$tempdir/one";
+
+    lives_ok(
+        sub { symlink '$good_path', '$good_path' },
+        "symlink on approved paths",
+    );
+
+    lives_ok(
+        sub { symlink '$bad_path', '$good_path'; },
+        "symlink( approved => forbidden )",
+    );
+
+    throws_ok(
+        sub { symlink '$good_path', '$bad_path'; },
+        'Filesys::Restrict::X::Forbidden',
+        "symlink( forbidden => approved )",
+    );
+
+    throws_ok(
+        sub { symlink '$bad_path', '$bad_path'; },
+        'Filesys::Restrict::X::Forbidden',
+        "symlink( forbidden => forbidden )",
+    );
+}
+
 sub _test_2paths {
     my $good_path = "$good_dir/one";
     my $bad_path = "$tempdir/one";
 
     my @funcs = qw( rename link );
-    push @funcs, 'symlink' if $Config{'d_symlink'};
 
     for my $fn ( @funcs ) {
         lives_ok(
