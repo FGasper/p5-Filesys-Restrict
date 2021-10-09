@@ -79,7 +79,7 @@ bool _is_pipe_open(pTHX_ const char* str, STRLEN len) {
     return false;
 }
 
-#define _IS_SCALAR_REF(sv) (SvROK(sv) && (SvTYPE(SvRV(sv)) < SVt_REGEXP))
+#define _IS_SCALAR_REF(sv) (SvROK(sv) && (SvTYPE(SvRV(sv)) < SVt_PVGV))
 
 // Returns NULL to indicate no path.
 static SV* _get_path_from_3arg_open(pTHX_ SV* mode, SV* expr) {
