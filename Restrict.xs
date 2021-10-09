@@ -84,6 +84,9 @@ bool _is_pipe_open(pTHX_ const char* str, STRLEN len) {
 // Returns NULL to indicate no path.
 static SV* _get_path_from_3arg_open(pTHX_ SV* mode, SV* expr) {
 
+    // 3-arg open with undef 3rd arg opens an anonymous tempfile.
+    if (!SvOK(expr)) return NULL;
+
     // Ignore scalar-reference paths, which indicate an “open”
     // of a Perl scalar.
     if (_IS_SCALAR_REF(expr)) return NULL;
@@ -329,16 +332,18 @@ static OP* _wrapped_pp_##OPID(pTHX) {                   \
     return ORIG_PL_ppaddr[OPID](aTHX);                  \
 }
 
-/* For ops that take a fixed number of args. */
-#define MAKE_FIRST_ARG_FIXED_LIST_WRAPPER(OPID, NUMARGS)      \
-static OP* _wrapped_pp_##OPID(pTHX) {               \
-    SV* callback = _get_callback(aTHX); \
-    if (callback) {                             \
-        dSP;                                        \
-        _authorize(aTHX_ OPID, *(SP - NUMARGS + 1), callback); \
-    }                                               \
-                                                    \
-    return ORIG_PL_ppaddr[OPID](aTHX);              \
+static OP* _wrapped_pp_OP_TRUNCATE(pTHX) {
+    SV* callback = _get_callback(aTHX);
+    if (callback) {
+        dSP;
+        SV* first_arg = *(SP - 1);
+
+        if (!_IS_FILEHANDLE(first_arg)) {
+            _authorize(aTHX_ OP_TRUNCATE, first_arg, callback);
+        }
+    }
+
+    return ORIG_PL_ppaddr[OP_TRUNCATE](aTHX);
 }
 
 #define MAKE_ALL_ARGS_LIST_WRAPPER_CHECK_FH(OPID, ARG_INDEX)       \
@@ -400,7 +405,6 @@ MAKE_SOCKET_OP_WRAPPER(OP_BIND);
 MAKE_SOCKET_OP_WRAPPER(OP_CONNECT);
 
 MAKE_SINGLE_ARG_LIST_WRAPPER(OP_SYSOPEN, 1, 4);
-MAKE_FIRST_ARG_FIXED_LIST_WRAPPER(OP_TRUNCATE, 2);
 
 MAKE_FIRST_ARG_OPEN_LIST_WRAPPER(OP_EXEC);
 MAKE_FIRST_ARG_OPEN_LIST_WRAPPER(OP_SYSTEM);

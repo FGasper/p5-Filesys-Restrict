@@ -218,6 +218,13 @@ sub _test_truncate {
         'Filesys::Restrict::X::Forbidden',
         "truncate on forbidden path",
     );
+
+    open my $fh, '+>', undef or die $!;
+
+    lives_ok(
+        sub { truncate $fh, 0 },
+        "truncate on filehandle",
+    );
 }
 
 sub _test_sysopen {
