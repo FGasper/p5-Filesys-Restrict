@@ -70,18 +70,78 @@ static inline SV* _get_callback(pTHX) {
     (SvROK(expr) && SvTYPE(SvRV(expr)) == SVt_PVIO)     \
 )
 
+bool _is_pipe_open(pTHX_ const char* str, STRLEN len) {
+    if (len >= 2) {
+        if (memEQ("|-", str, 2)) return true;
+        if (memEQ("-|", str, 2)) return true;
+    }
+
+    return false;
+}
+
+#define _IS_SCALAR_REF(sv) (SvROK(sv) && (SvTYPE(SvRV(sv)) < SVt_REGEXP))
+
 // Returns NULL to indicate no path.
 static SV* _get_path_from_3arg_open(pTHX_ SV* mode, SV* expr) {
+
+    // Ignore scalar-reference paths, which indicate an “open”
+    // of a Perl scalar.
+    if (_IS_SCALAR_REF(expr)) return NULL;
+
     if (!SvPOK(mode)) croak("mode isn’t a string?!?");
 
     STRLEN modelen;
     const char* modestr = SvPVbyte(mode, modelen);
+
+    if (_is_pipe_open(aTHX_ modestr, modelen)) return NULL;
 
     // If the last character of the mode is '=' then expr is a
     // file descriptor or filehandle, so we shouldn’t care.
     if (NULL != strchr(modestr, '&')) return NULL;
 
     return expr;
+}
+
+static SV* _get_path_from_2arg_open(pTHX_ SV* expr) {
+    STRLEN len;
+    const char* str = SvPVbyte(expr, len);
+
+    if (_is_pipe_open(aTHX_ str, len)) return NULL;
+
+    if (len < 1) return NULL;
+
+    // Special cases:
+    if (len == 2) {
+        if (memEQ(str, ">-", 2)) return NULL;   // opens STDOUT
+        if (memEQ(str, "<-", 2)) return NULL;   // opens STDIN
+    }
+
+    STRLEN idx = 0;
+
+    if (str[idx] == '+') idx++;
+
+    if (str[idx] == '<') {
+        idx++;
+    }
+    else if (str[idx] == '>') {
+        idx++;
+
+        if (str[idx] == '>') idx++;
+    }
+    else {
+
+        // For now ignore anything that isn’t +>, +>>, +<, >, >>, or <.
+        return NULL;
+    }
+
+    // Duplicating a filehandle or file descriptor is always OK.
+    if (str[idx] == '&') return NULL;
+
+    return newSVpvn_flags(
+        str + idx,
+        len - idx,
+        SVs_TEMP
+    );
 }
 
 static inline void _prep_stack(pTHX_ SV** args, unsigned argscount) {
@@ -153,13 +213,12 @@ static OP* _wrapped_pp_OP_OPEN(pTHX) {
 
         switch (numargs) {
             case 1:
-                croak("Avoid one-argument open()!");
-                break;  // pro-forma
+                path = NULL;
+                break;
 
             case 2:
-                croak("TODO");
+                path = _get_path_from_2arg_open(aTHX_ MARK[2]);
                 break;
-                //path = _get_path_from_2arg_open(MARK + 1);
 
             case 3:
                 path = _get_path_from_3arg_open(aTHX_ MARK[2], MARK[3]);

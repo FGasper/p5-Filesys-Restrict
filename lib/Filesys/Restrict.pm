@@ -48,9 +48,17 @@ The following are some known ways to circumvent it:
 
 =item * Use C code via XS.
 
+=item * Use one of C<open()>’s more esoteric forms.
+This module tries to parse typical C<open()> arguments but doesn’t
+“bend over backward”. The 2- and 3-argument forms are assumed to be
+valid if there’s an unrecognized format, and we ignore the 1-argument
+form entirely.
+
 =item * Call C<do()> or C<require()>. (See below.)
 
 =back
+
+Perl’s C<open()> built-in is difficult to parse. This module makes
 
 Concerning this last note: we I<could> restrict C<do()> and C<require()>.
 These, though, are a bit different from other built-ins because they

@@ -26,6 +26,18 @@ mkdir $good_dir;
 
     my $fh;
 
+    local *MY_BAREWORD_FH;
+
+    lives_ok(
+        sub { open MY_BAREWORD_FH, '<', "$good_dir/whatwhat" },
+        '3-arg, approve (bareword filehandle)',
+    );
+
+    lives_ok(
+        sub { open MY_BAREWORD_FH, "<$good_dir/whatwhat" },
+        '2-arg, approve (bareword filehandle)',
+    );
+
     lives_ok(
         sub { open $fh, '<', "$good_dir/whatwhat" },
         '3-arg, approve',
@@ -36,6 +48,41 @@ mkdir $good_dir;
         'Filesys::Restrict::X::Forbidden',
         '3-arg, fail',
     );
+
+    for my $prefix ( q<>, '+' ) {
+        lives_ok(
+            sub { open $fh, "$prefix<$good_dir/whatwhat" },
+            "2-arg $prefix<, approve",
+        );
+
+        throws_ok(
+            sub { open $fh, "$prefix<$tempdir/whatwhat" },
+            'Filesys::Restrict::X::Forbidden',
+            "2-arg $prefix<, fail",
+        );
+
+        lives_ok(
+            sub { open $fh, "$prefix>$good_dir/whatwhat" },
+            "2-arg $prefix>, approve",
+        );
+
+        throws_ok(
+            sub { open $fh, "$prefix>$tempdir/whatwhat" },
+            'Filesys::Restrict::X::Forbidden',
+            "2-arg $prefix>, fail",
+        );
+
+        lives_ok(
+            sub { open $fh, "$prefix>>$good_dir/whatwhat" },
+            "2-arg $prefix>>, approve",
+        );
+
+        throws_ok(
+            sub { open $fh, "$prefix>>$tempdir/whatwhat" },
+            'Filesys::Restrict::X::Forbidden',
+            "2-arg $prefix>>, fail",
+        );
+    }
 
     throws_ok(
         sub { open $fh, '<', *STDIN },
