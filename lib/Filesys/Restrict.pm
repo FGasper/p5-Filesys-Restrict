@@ -58,8 +58,6 @@ form entirely.
 
 =back
 
-Perl’s C<open()> built-in is difficult to parse. This module makes
-
 Concerning this last note: we I<could> restrict C<do()> and C<require()>.
 These, though, are a bit different from other built-ins because they
 don’t facilitate reading arbitrary data off the filesystem; rather,
