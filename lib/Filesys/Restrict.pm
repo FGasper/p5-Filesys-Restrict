@@ -3,7 +3,14 @@ package Filesys::Restrict;
 use strict;
 use warnings;
 
-our $VERSION = '0.01_01';
+our $VERSION;
+
+BEGIN {
+    $VERSION = '0.01_01';
+
+    require XSLoader;
+    XSLoader::load(__PACKAGE__, $VERSION);
+}
 
 =encoding utf-8
 
@@ -77,9 +84,6 @@ implementations.
 #----------------------------------------------------------------------
 
 use Filesys::Restrict::X ();
-
-require XSLoader;
-XSLoader::load(__PACKAGE__, $VERSION);
 
 our $_AUTHORIZE = undef;
 
