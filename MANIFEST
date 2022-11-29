@@ -2,6 +2,7 @@ MANIFEST
 Makefile.PL
 README.md
 Restrict.xs
+easyxs
 lib/Filesys/Restrict.pm
 lib/Filesys/Restrict/X.pm
 lib/Filesys/Restrict/X/Base.pm
