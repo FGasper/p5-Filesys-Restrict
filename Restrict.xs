@@ -1,7 +1,5 @@
 #define PERL_NO_GET_CONTEXT
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
+#include "easyxs/easyxs.h"
 
 // Cribbed from Socket.xs:
 /* STRUCT_OFFSET should have come from from perl.h, but if not,
