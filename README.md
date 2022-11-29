@@ -30,29 +30,28 @@ this is to restrict filesystem access to `/tmp` in tests.
 
 # **THIS** **IS** **NOT** **A** **SECURITY** **TOOL!**
 
-This module cannot prevent any and all unintended filesystem access.
+This module cannot prevent all unintended filesystem access.
 The following are some known ways to circumvent it:
 
-- Use a module like [POSIX](https://metacpan.org/pod/POSIX), or `system()`.
-- Use C code via XS.
+- Use XS modules (e.g., [POSIX](https://metacpan.org/pod/POSIX)).
 - Use one of `open()`’s more esoteric forms.
 This module tries to parse typical `open()` arguments but doesn’t
 “bend over backward”. The 2- and 3-argument forms are assumed to be
 valid if there’s an unrecognized format, and we ignore the 1-argument
 form entirely.
-- Call `do()` or `require()`. (See below.)
+- Call `system()`, `do()`, or `require()`.
 
-Concerning this last note: we _could_ restrict `do()` and `require()`.
-These, though, are a bit different from other built-ins because they
-don’t facilitate reading arbitrary data off the filesystem; rather,
-they’re narrowly-scoped to bringing in additional Perl code.
+    We _could_ actually restrict `do()` and `require()`.
+    These, though, are a bit different from other built-ins because they
+    don’t facilitate reading arbitrary data off the filesystem; rather,
+    they’re narrowly-scoped to bringing in additional Perl code.
 
-If you have a use case where it’s useful to restrict these,
-file a feature request.
+    If you have a use case where it’s useful to restrict these,
+    file a feature request.
 
 # SEE ALSO
 
-[fanotify(7)](http://man.he.net/man7/fanotify) on Linux provides a method of real-time access control
+Linux’s [fanotify(7)](http://man.he.net/man7/fanotify) provides a method of real-time access control
 via the kernel. See [Linux::Fanotify](https://metacpan.org/pod/Linux%3A%3AFanotify) and [Linux::Perl](https://metacpan.org/pod/Linux%3A%3APerl) for Perl
 implementations.
 

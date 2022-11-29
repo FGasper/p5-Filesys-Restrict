@@ -46,14 +46,12 @@ this is to restrict filesystem access to F</tmp> in tests.
 
 =head1 B<THIS> B<IS> B<NOT> B<A> B<SECURITY> B<TOOL!>
 
-This module cannot prevent any and all unintended filesystem access.
+This module cannot prevent all unintended filesystem access.
 The following are some known ways to circumvent it:
 
 =over
 
-=item * Use a module like L<POSIX>, or C<system()>.
-
-=item * Use C code via XS.
+=item * Use XS modules (e.g., L<POSIX>).
 
 =item * Use one of C<open()>’s more esoteric forms.
 This module tries to parse typical C<open()> arguments but doesn’t
@@ -61,11 +59,9 @@ This module tries to parse typical C<open()> arguments but doesn’t
 valid if there’s an unrecognized format, and we ignore the 1-argument
 form entirely.
 
-=item * Call C<do()> or C<require()>. (See below.)
+=item * Call C<system()>, C<do()>, or C<require()>.
 
-=back
-
-Concerning this last note: we I<could> restrict C<do()> and C<require()>.
+We I<could> actually restrict C<do()> and C<require()>.
 These, though, are a bit different from other built-ins because they
 don’t facilitate reading arbitrary data off the filesystem; rather,
 they’re narrowly-scoped to bringing in additional Perl code.
@@ -73,9 +69,11 @@ they’re narrowly-scoped to bringing in additional Perl code.
 If you have a use case where it’s useful to restrict these,
 file a feature request.
 
+=back
+
 =head1 SEE ALSO
 
-L<fanotify(7)> on Linux provides a method of real-time access control
+Linux’s L<fanotify(7)> provides a method of real-time access control
 via the kernel. See L<Linux::Fanotify> and L<Linux::Perl> for Perl
 implementations.
 
