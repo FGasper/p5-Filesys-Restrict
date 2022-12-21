@@ -76,3 +76,13 @@ The callback can end in one of three ways:
 - Return falsy to cause a [Filesys::Restrict::X::Forbidden](https://metacpan.org/pod/Filesys%3A%3ARestrict%3A%3AX%3A%3AForbidden)
 instance to be thrown.
 - Throw a custom exception.
+
+# LICENSE & COPYRIGHT
+
+Copyright 2022 Gasper Software Consulting. All rights reserved.
+
+This library is licensed under the same terms as Perl itself.
+See [perlartistic](https://metacpan.org/pod/perlartistic).
+
+This library was originally a research project at
+[cPanel, L.L.C.](https://cpanel.net).

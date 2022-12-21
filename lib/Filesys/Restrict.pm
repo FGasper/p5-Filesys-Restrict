@@ -6,7 +6,7 @@ use warnings;
 our $VERSION;
 
 BEGIN {
-    $VERSION = '0.01_01';
+    $VERSION = '0.01';
 
     require XSLoader;
     XSLoader::load(__PACKAGE__, $VERSION);
@@ -156,3 +156,15 @@ sub DESTROY {
 }
 
 1;
+
+#----------------------------------------------------------------------
+
+=head1 LICENSE & COPYRIGHT
+
+Copyright 2022 Gasper Software Consulting. All rights reserved.
+
+This library is licensed under the same terms as Perl itself.
+See L<perlartistic>.
+
+This library was originally a research project at
+L<cPanel, L.L.C.|https://cpanel.net>.
