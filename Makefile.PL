@@ -10,7 +10,7 @@ WriteMakefile(
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/Filesys/Restrict.pm', # retrieve abstract from module
        AUTHOR         => [
-            'cPanel, L. L. C. (CPANEL)',
+            'Felipe Gasper (FELIPE)',
         ],
       ) : ()
     ),
@@ -27,11 +27,11 @@ WriteMakefile(
         resources => {
             repository => {
                 type => 'git',
-                url => 'git://github.com/cpanel/p5-Filesys-Restrict.git',
-                web => 'https://github.com/cpanel/p5-Filesys-Restrict',
+                url => 'git://github.com/FGasper/p5-Filesys-Restrict.git',
+                web => 'https://github.com/FGasper/p5-Filesys-Restrict',
             },
             bugtracker => {
-                web => 'https://github.com/cpanel/p5-Filesys-Restrict/issues',
+                web => 'https://github.com/FGasper/p5-Filesys-Restrict/issues',
             },
         },
     },
