@@ -6,7 +6,7 @@ use warnings;
 our $VERSION;
 
 BEGIN {
-    $VERSION = '0.01';
+    $VERSION = '0.02';
 
     require XSLoader;
     XSLoader::load(__PACKAGE__, $VERSION);
@@ -72,6 +72,9 @@ file a feature request.
 =back
 
 =head1 SEE ALSO
+
+L<Test::MockFile> can achieve a similar effect to this module but
+has some compatibility problems with some Perl syntax.
 
 Linux’s L<fanotify(7)> provides a method of real-time access control
 via the kernel. See L<Linux::Fanotify> and L<Linux::Perl> for Perl

@@ -51,6 +51,9 @@ form entirely.
 
 # SEE ALSO
 
+[Test::MockFile](https://metacpan.org/pod/Test%3A%3AMockFile) can achieve a similar effect to this module but
+has some compatibility problems with some Perl syntax.
+
 Linux’s [fanotify(7)](http://man.he.net/man7/fanotify) provides a method of real-time access control
 via the kernel. See [Linux::Fanotify](https://metacpan.org/pod/Linux%3A%3AFanotify) and [Linux::Perl](https://metacpan.org/pod/Linux%3A%3APerl) for Perl
 implementations.
