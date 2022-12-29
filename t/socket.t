@@ -9,6 +9,7 @@ use Test::Exception;
 
 use File::Temp ();
 use Socket ();
+use Data::Dumper;
 
 use Filesys::Restrict;
 
@@ -60,18 +61,34 @@ mkdir $good_dir;
 }
 
 {
-    my $path;
-    my $check = Filesys::Restrict::create( sub {
-        $path = $_[1];
+    my @socket_paths = (
+        "\0hahahaha",
+    );
 
-        return 1;
-    } );
+    if ($^O eq 'linux') {
 
-    socket my $s, Socket::AF_UNIX, Socket::SOCK_STREAM, 0;
+        # The max allowable socket length is 108. cf. unix(7)
+        push @socket_paths, '/' . ('x' x 107);
+    }
 
-    bind $s, Socket::pack_sockaddr_un("\0hahahaha");
+    for my $specimen (@socket_paths) {
+        my $path;
+        my $check = Filesys::Restrict::create( sub {
+            $path = $_[1];
 
-    is( $path, "\0hahahaha", 'expected path given to callback' );
+            return 1;
+        } );
+
+        socket my $s, Socket::AF_UNIX, Socket::SOCK_STREAM, 0;
+
+        bind $s, Socket::pack_sockaddr_un($specimen);
+
+        is( $path, $specimen, 'expected path given to callback' ) or do {
+            local $Data::Dumper::Useqq = 1;
+            local $Data::Dumper::Terse = 1;
+            diag Dumper( "len=" . length($path), $path);
+        };
+    }
 }
 
 done_testing();
