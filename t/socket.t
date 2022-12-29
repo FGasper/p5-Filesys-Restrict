@@ -86,6 +86,7 @@ mkdir $good_dir;
         my $pretty = do {
             local $Data::Dumper::Useqq = 1;
             local $Data::Dumper::Terse = 1;
+            local $Data::Dumper::Indent = 0;
             Dumper($path);
         };
 
