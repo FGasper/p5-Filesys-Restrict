@@ -83,11 +83,13 @@ mkdir $good_dir;
 
         bind $s, Socket::pack_sockaddr_un($specimen);
 
-        is( $path, $specimen, 'expected path given to callback' ) or do {
+        my $pretty = do {
             local $Data::Dumper::Useqq = 1;
             local $Data::Dumper::Terse = 1;
-            diag Dumper( "len=" . length($path), $path);
+            Dumper($path);
         };
+
+        is( $path, $specimen, "expected path given to callback: $pretty" );
     }
 }
 
