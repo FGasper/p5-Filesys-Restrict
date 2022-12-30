@@ -1,6 +1,6 @@
 Revision history for Perl extension Filesys::Restrict:
 
-0.05
+0.05 Fri Dec 30 2022
 - Fix UNIX sockets in ancient perls (5.10.0).
 - Remove a needless C export.
 
